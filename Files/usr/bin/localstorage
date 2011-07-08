@@ -6,7 +6,7 @@ DisplayHelp() {
 	echo "Usage: $(basename $0) [OPTIONS]"
 	echo
 	echo "Mandatory options:"
-	echo "  -i  The id of the phonegap app to use..."
+	echo "  -i  The id of the phonegap app to use... use -d to skip the search and use the passed path to an app"
 	echo
 	echo "Other options:"
 	echo "  -r  Remove a key"
@@ -29,6 +29,9 @@ while [ "$1" != "" ]; do
 		-k)
                         key="$2"
                         shift 2;;
+                -d)
+                        Loc="$2"
+                        shift 2;;
                 -r)
                         key="$2"
 			rm=true
@@ -46,11 +49,13 @@ while [ "$1" != "" ]; do
 	esac
 done
 
+if [ "z$Loc" = "z" ]; then
 for App in $(find /var/mobile/Applications -maxdepth 3 -type f -name Info.plist); do
 	if [ "$(plutil -key CFBundleIdentifier "$App" 2>&1)" = "$AppId" ]; then
 		Loc="/var/mobile/Applications/$(echo $App | awk -F "/" '{ print $5 }')/Library/WebKit/LocalStorage/file__0.localstorage"
 	fi
 done
+fi
 
 if [ "z$Loc" == "z" ]; then
 	echo "Error: App not found!";

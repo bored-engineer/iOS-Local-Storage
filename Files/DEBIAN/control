@@ -1,6 +1,6 @@
 Package: com.innoying.localstorage
 Name: Local Storage
-Version: 1.0
+Version: 1.0.2
 Architecture: iphoneos-arm
 Description: A utility for modifying a phonegap application's localstorage in a bash script.
 Maintainer: Luke Young (innoying) <cydia@innoying.com>
