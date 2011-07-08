@@ -1,0 +1,103 @@
+#!/bin/bash
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
+DisplayHelp() {
+	echo "Usage: $(basename $0) [OPTIONS]"
+	echo
+	echo "Mandatory options:"
+	echo "  -i  The id of the phonegap app to use..."
+	echo
+	echo "Other options:"
+	echo "  -r  Remove a key"
+	echo "  -k  Select a key"
+	echo "  -v  Assign a value. This should be used with the key parameter"
+	echo "  -h  display help"
+	echo
+}
+
+if [ $# -eq 0 ]; then
+	DisplayHelp
+	exit 1
+fi
+
+while [ "$1" != "" ]; do
+	case $1 in
+		-i)
+			AppId="$2"
+			shift 2;;
+		-k)
+                        key="$2"
+                        shift 2;;
+                -r)
+                        key="$2"
+			rm=true
+                        shift 2;;
+                -v)
+                        value="$2"
+                        shift 2;;
+		-h)
+			DisplayHelp
+			exit 0;;
+		*)
+			DisplayHelp
+			echo "Unrecognized option: $1"
+			exit 1;;
+	esac
+done
+
+for App in $(find /var/mobile/Applications -maxdepth 3 -type f -name Info.plist); do
+	if [ "$(plutil -key CFBundleIdentifier "$App" 2>&1)" = "$AppId" ]; then
+		Loc="/var/mobile/Applications/$(echo $App | awk -F "/" '{ print $5 }')/Library/WebKit/LocalStorage/file__0.localstorage"
+	fi
+done
+
+if [ "z$Loc" == "z" ]; then
+	echo "Error: App not found!";
+	exit 1;
+fi
+if [ ! -f $Loc ]; then
+	echo "Error: This App does not have a LocalStorage db..."
+	exit 1;
+fi
+
+if [ "z$key" != "z" ]; then
+
+if [ "z$value" != "z" ]; then
+
+sqlite3 "$Loc" <<SQL_ENTRY_TAG_1
+INSERT OR REPLACE INTO ItemTable
+(key, value)
+  VALUES ("$key","$value");
+SQL_ENTRY_TAG_1
+
+elif [ "z$rm" != "z" ]; then
+
+sqlite3 "$Loc" <<SQL_ENTRY_TAG_1
+DELETE FROM ItemTable
+  WHERE key = "$key";
+SQL_ENTRY_TAG_1
+
+
+else
+
+sqlite3 "$Loc" <<SQL_ENTRY_TAG_1
+SELECT value
+  FROM ItemTable
+  WHERE key = "$key";
+SQL_ENTRY_TAG_1
+
+fi
+
+else
+
+sqlite3 "$Loc" <<SQL_ENTRY_TAG_2
+SELECT *
+  FROM ItemTable
+  WHERE 1;
+SQL_ENTRY_TAG_2
+
+
+fi
+
+IFS=$SAVEIFS

@@ -1,0 +1,3 @@
+Description: A utility for modifying a phonegap application's localstorage in a bash script.
+
+NOTE: It does not currently use proper sql handling and, as a result, you must escape your (key, remove, value) parameters in sql syntax if applicable.
